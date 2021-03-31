@@ -1,11 +1,11 @@
 {
-    "name": "abdallahmohammed/urway-laravel",
+    "name": "MohammedSobhee/laravel-urway",
     "description": "URWAY REST API package for Laravel",
     "type": "library",
     "license": "MIT",
     "authors": [{
-        "name": "AbdallahMohammed",
-        "email": "abdallah.r660@gmail.com"
+        "name": "MohammedSobbhee",
+        "email": "mohammedsobhee@gmail.com"
     }],
     "minimum-stability": "dev",
     "require": {
