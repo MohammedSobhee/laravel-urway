@@ -11,14 +11,14 @@ class Client extends BaseService
 
     /**
      * Request method.
-     * 
+     *
      * @var string
      */
     protected $method = 'POST';
 
     /**
      * Store request attributes.
-     * 
+     *
      * @var array
      */
     protected $attributes = [];
@@ -95,10 +95,10 @@ class Client extends BaseService
         return $this;
     }
 
-	/**
-	 * @return mixed
-	 * @throws \GuzzleHttp\Exception\GuzzleException|\Exception
-	 */
+    /**
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException|\Exception
+     */
     public function pay()
     {
         // According to documentation we have to send the `terminal_id`, and `password` now.
@@ -116,17 +116,44 @@ class Client extends BaseService
                 ]
             );
 
-            return new Response((string) $response->getBody());
+            return new Response((string)$response->getBody());
         } catch (\Throwable $e) {
             throw new \Exception($e->getMessage());
         }
     }
 
-	/**
+    /**
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException|\Exception
+     */
+    public function refund()
+    {
+        // According to documentation we have to send the `terminal_id`, and `password` now.
+        $this->setAuthAttributes();
+
+        // We have to generate request
+        $this->generateRefundRequest();
+
+        try {
+            $response = $this->guzzleClient->request(
+                $this->method,
+                $this->getEndPointPath(),
+                [
+                    'json' => $this->attributes,
+                ]
+            );
+
+            return new Response((string)$response->getBody());
+        } catch (\Throwable $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    /**
      * @param string $transaction_id
-	 * @return mixed
-	 * @throws \GuzzleHttp\Exception\GuzzleException|\Exception
-	 */
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException|\Exception
+     */
     public function find(string $transaction_id)
     {
         // According to documentation we have to send the `terminal_id`, and `password` now.
@@ -146,7 +173,7 @@ class Client extends BaseService
                 ]
             );
 
-            return new Response((string) $response->getBody());
+            return new Response((string)$response->getBody());
         } catch (\Throwable $e) {
             throw new \Exception($e->getMessage());
         }
@@ -159,7 +186,17 @@ class Client extends BaseService
     {
         $requestHash = $this->attributes['trackid'] . '|' . config('urway.auth.terminal_id') . '|' . config('urway.auth.password') . '|' . config('urway.auth.merchant_key') . '|' . $this->attributes['amount'] . '|' . $this->attributes['currency'];
         $this->attributes['requestHash'] = hash('sha256', $requestHash);
-        $this->attributes['action'] = '1'; // I don't know why.
+        $this->attributes['action'] = '1'; // Purchase Process.
+    }
+
+    /**
+     * @return void
+     */
+    protected function generateRefundRequest()
+    {
+        $requestHash = $this->attributes['trackid'] . '|' . config('urway.auth.terminal_id') . '|' . config('urway.auth.password') . '|' . config('urway.auth.merchant_key') . '|' . $this->attributes['amount'] . '|' . $this->attributes['currency'];
+        $this->attributes['requestHash'] = hash('sha256', $requestHash);
+        $this->attributes['action'] = '2'; // Refund Process.
     }
 
     /**
@@ -167,9 +204,9 @@ class Client extends BaseService
      */
     protected function generateFindRequestHash()
     {
-        $requestHash = $this->attributes['trackid'] . '|' . config('urway.auth.terminal_id') . '|' . config('urway.auth.password') . '|' . config('urway.auth.merchant_key') . '|' . $this->attributes['amount']  . '|' . $this->attributes['currency'];
+        $requestHash = $this->attributes['trackid'] . '|' . config('urway.auth.terminal_id') . '|' . config('urway.auth.password') . '|' . config('urway.auth.merchant_key') . '|' . $this->attributes['amount'] . '|' . $this->attributes['currency'];
         $this->attributes['requestHash'] = hash('sha256', $requestHash);
-        $this->attributes['action'] = '10'; // I don't know why.
+        $this->attributes['action'] = '10'; // Transaction Inquiry Process.
     }
 
     /**
