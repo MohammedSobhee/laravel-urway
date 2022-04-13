@@ -33,5 +33,6 @@
                 "URWay\\URWayServiceProvider"
             ]
         }
-    }
+    },
+    "prefer-stable": true
 }
