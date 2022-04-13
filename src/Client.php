@@ -96,6 +96,53 @@ class Client extends BaseService
     }
 
     /**
+     * @param array $attributes
+     *
+     * @return $this
+     */
+    public function mergeAttributes(array $attributes)
+    {
+        $this->attributes = array_merge($this->attributes, $attributes);
+        return $this;
+    }
+
+    /**
+     * @param mixed $key
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function setAttribute($key, $value)
+    {
+        $this->attributes[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * @param mixed $key
+     *
+     * @return boolean
+     */
+    public function hasAttribute($key)
+    {
+        return isset($this->attributes[$key]);
+    }
+
+    /**
+     * @param mixed $key
+     *
+     * @return boolean
+     */
+    public function removeAttribute($key)
+    {
+        $this->attributes = array_filter($this->attributes, function ($name) use ($key) {
+            return $name !== $key;
+        }, ARRAY_FILTER_USE_KEY);
+
+        return $this;
+    }
+
+    /**
      * @return mixed
      * @throws \GuzzleHttp\Exception\GuzzleException|\Exception
      */
@@ -115,24 +162,21 @@ class Client extends BaseService
                     'json' => $this->attributes,
                 ]
             );
-
             return new Response((string)$response->getBody());
         } catch (\Throwable $e) {
             throw new \Exception($e->getMessage());
         }
     }
 
-    /**
-     * @return mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException|\Exception
-     */
-    public function refund()
+    public function refund(string $transaction_id)
     {
         // According to documentation we have to send the `terminal_id`, and `password` now.
         $this->setAuthAttributes();
 
         // We have to generate request
         $this->generateRefundRequest();
+
+        $this->attributes['transid'] = $transaction_id;
 
         try {
             $response = $this->guzzleClient->request(
@@ -186,12 +230,9 @@ class Client extends BaseService
     {
         $requestHash = $this->attributes['trackid'] . '|' . config('urway.auth.terminal_id') . '|' . config('urway.auth.password') . '|' . config('urway.auth.merchant_key') . '|' . $this->attributes['amount'] . '|' . $this->attributes['currency'];
         $this->attributes['requestHash'] = hash('sha256', $requestHash);
-        $this->attributes['action'] = '1'; // Purchase Process.
+        $this->attributes['action'] = '1'; // I don't know why.
     }
 
-    /**
-     * @return void
-     */
     protected function generateRefundRequest()
     {
         $requestHash = $this->attributes['trackid'] . '|' . config('urway.auth.terminal_id') . '|' . config('urway.auth.password') . '|' . config('urway.auth.merchant_key') . '|' . $this->attributes['amount'] . '|' . $this->attributes['currency'];
@@ -206,7 +247,7 @@ class Client extends BaseService
     {
         $requestHash = $this->attributes['trackid'] . '|' . config('urway.auth.terminal_id') . '|' . config('urway.auth.password') . '|' . config('urway.auth.merchant_key') . '|' . $this->attributes['amount'] . '|' . $this->attributes['currency'];
         $this->attributes['requestHash'] = hash('sha256', $requestHash);
-        $this->attributes['action'] = '10'; // Transaction Inquiry Process.
+        $this->attributes['action'] = '10'; // I don't know why.
     }
 
     /**
