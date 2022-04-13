@@ -3,7 +3,7 @@
 ### Installation
 
 ```bash
-composer require MohammedSobhee/laravel-urway
+composer require mohammedsobhee/laravel-urway
 ```
 
 ### Usage
